@@ -15,7 +15,7 @@ import {
   } from "react-bootstrap";
   import { FaEdit,FaTrashAlt } from "react-icons/fa";
   import { useState, useEffect } from "react";
-  import { ToastContainer, toast } from "react-toastify";
+  
   import { db } from "./firebase-config";
   import {
     collection,
@@ -85,7 +85,7 @@ import ConfirmDialog from "./ConfirmDialog";
       }
       setLoading(true);
       if(!user.id){
-        const response = await addDoc(usersCollectionRef, user); 
+         await addDoc(usersCollectionRef, user); 
         setLoading(false);
         setValidated(false);
        setToggle(!toggle);
@@ -243,7 +243,7 @@ import ConfirmDialog from "./ConfirmDialog";
           </Offcanvas.Body>
         </Offcanvas>
     </Container>
-        <ToastContainer autoClose={2000} />
+        
         <ConfirmDialog
         showDialog={showDialog}
         handleDialogYes={handleDialogYes}
