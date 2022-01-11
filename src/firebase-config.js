@@ -8,9 +8,9 @@ const firebaseConfig = {
   storageBucket: "react-crud-firebase-f4956.appspot.com",
   messagingSenderId: "790119430726",
   appId: "1:790119430726:web:06fbe49954d8007615a847",
-  measurementId: "G-SHKJQ44LV3"
-  };
+  measurementId: "G-SHKJQ44LV3",
+};
 
-  const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);

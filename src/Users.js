@@ -1,120 +1,124 @@
 import {
-    Card,
-    Button,
-    Row,
-    Col,
-    Form,
-    FormGroup,
-    FormControl,
-    FormLabel,
-    Spinner,
-    Table,
-    Offcanvas,
-    Container,
-    Navbar
-  } from "react-bootstrap";
-  import { FaEdit,FaTrashAlt } from "react-icons/fa";
-  import { useState, useEffect } from "react";
-  
-  import { db } from "./firebase-config";
-  import {
-    collection,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-  } from "firebase/firestore";
+  Card,
+  Button,
+  Row,
+  Col,
+  Form,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  Spinner,
+  Table,
+  Offcanvas,
+  Container,
+  Navbar,
+} from "react-bootstrap";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { useState, useEffect } from "react";
+
+import { db } from "./firebase-config";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import ConfirmDialog from "./ConfirmDialog";
-  
-  
-  const Users = () => {
-    const usersCollectionRef = collection(db, "users");
-    const [user, setUser] = useState({});
-    const [validated, setValidated] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [userList, setUserList] = useState([]);
-    const [toggle, setToggle] = useState(false);
-    const [showCanvas, setShowCanvas] = useState(false);
-    const [showDialog, setShowDialog] = useState(false);
-  
-  
-    useEffect(() => {
-        const getUsers = async () => {
-            const data = await getDocs(usersCollectionRef);
-            console.log(data);
-            setUserList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-          };
-      
-          getUsers();
-    }, [toggle]);
 
-    const handleDialogNo=()=>{
-        setShowDialog(false);
+const Users = () => {
+  const usersCollectionRef = collection(db, "users");
+  const [user, setUser] = useState({});
+  const [validated, setValidated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [toggle, setToggle] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const data = await getDocs(usersCollectionRef);
+      console.log(data);
+      setUserList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     };
 
-    const handleDialogYes =()=>{
-        deleteUser(user.id);
-        setShowDialog(false);
+    getUsers();
+  }, [toggle]);
+
+  const handleDialogNo = () => {
+    setShowDialog(false);
+  };
+
+  const handleDialogYes = () => {
+    deleteUser(user.id);
+    setShowDialog(false);
+  };
+
+  const handleClose = () => {
+    setShowCanvas(false);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setUser({ ...user, [name]: value });
+  };
+
+  const deleteUser = async (id) => {
+    const userDoc = doc(db, "users", id);
+    await deleteDoc(userDoc);
+    setToggle(!toggle);
+  };
+
+  const saveUser = async (e) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+      setValidated(true);
+      return;
     }
-  
-    const handleClose = () => {
-      setShowCanvas(false);
-    };
-  
-    const handleChange = (event) => {
-      const { name, value } = event.target;
-  
-      setUser({ ...user, [name]: value });
-    };
+    setLoading(true);
+    if (!user.id) {
+      await addDoc(usersCollectionRef, user);
+      setLoading(false);
+      setValidated(false);
+      setToggle(!toggle);
+    } else {
+      const userDoc = doc(db, "users", user.id);
+      await updateDoc(userDoc, user);
+      setLoading(false);
+      setValidated(false);
+      setToggle(!toggle);
+    }
+  };
 
-    const deleteUser = async (id) => {
-        const userDoc = doc(db, "users", id);
-        await deleteDoc(userDoc);
-        setToggle(!toggle);
-      };
-  
-    const saveUser = async (e) => {
-      e.preventDefault();
-  
-      const form = e.currentTarget;
-      if (form.checkValidity() === false) {
-        e.stopPropagation();
-        setValidated(true);
-        return;
-      }
-      setLoading(true);
-      if(!user.id){
-         await addDoc(usersCollectionRef, user); 
-        setLoading(false);
-        setValidated(false);
-       setToggle(!toggle);
-      }else{
-        const userDoc = doc(db, "users", user.id);
-        await updateDoc(userDoc, user);
-        setLoading(false);
-        setValidated(false);
-       setToggle(!toggle);
-      }
-    };
-  
-    return (
-      <div>
-    <Navbar bg="dark" variant="dark">
-    <Container>
-    <Navbar.Brand href="#home">FIREBASE-CRUD</Navbar.Brand>
-    
-    </Container>
-  </Navbar>
-    <Container>
-       
+  return (
+    <div>
+      <Navbar bg="dark" variant="dark">
+        <Container>
+          <Navbar.Brand href="#home">FIREBASE-CRUD</Navbar.Brand>
+        </Container>
+      </Navbar>
+      <Container>
         <div align="right" className="mt-3">
-        <Button variant="primary" onClick={()=>{setShowCanvas(true);setUser({});}} className="d-flex justify-content-end">Add New</Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setShowCanvas(true);
+              setUser({});
+            }}
+            className="d-flex justify-content-end"
+          >
+            Add New
+          </Button>
         </div>
 
         <Row className="mt-2">
           <Col>
-          
             <Card>
               <Table responsive striped borderless>
                 <thead>
@@ -142,12 +146,19 @@ import ConfirmDialog from "./ConfirmDialog";
                       <td>{item.userName}</td>
                       <td>{item.email}</td>
                       <td>
-                <Button variant="primary" className='me-2' onClick={()=>setShowCanvas(true)} >
-                    <FaEdit/>  
-                </Button>
-                <Button variant="danger" onClick={()=>setShowDialog(true)} >
-                    <FaTrashAlt/>
-                </Button>
+                        <Button
+                          variant="primary"
+                          className="me-2"
+                          onClick={() => setShowCanvas(true)}
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => setShowDialog(true)}
+                        >
+                          <FaTrashAlt />
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -216,9 +227,8 @@ import ConfirmDialog from "./ConfirmDialog";
                     required
                   ></FormControl>
                 </FormGroup>
-                
               </Row>
-              
+
               {loading ? (
                 <Button variant="primary" disabled className="float-end mt-2">
                   <Spinner
@@ -242,15 +252,15 @@ import ConfirmDialog from "./ConfirmDialog";
             </Form>
           </Offcanvas.Body>
         </Offcanvas>
-    </Container>
-        
-        <ConfirmDialog
+      </Container>
+
+      <ConfirmDialog
         showDialog={showDialog}
         handleDialogYes={handleDialogYes}
         handleDialogNo={handleDialogNo}
-        />
-      </div>
-    );
-  };
-  
-  export default Users;
+      />
+    </div>
+  );
+};
+
+export default Users;
